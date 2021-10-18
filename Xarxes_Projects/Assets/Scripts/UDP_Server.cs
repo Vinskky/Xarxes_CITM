@@ -9,14 +9,16 @@ using System.Threading;
 
 public class UDP_Server : MonoBehaviour
 {
+    bool exit = false;
+    bool serverSend = false;
     Socket socket;
 
     IPEndPoint ip;
 
     EndPoint remote;
 
-    int recivingPort = 7979;
-    int sendingPort = 6969;
+    int serverPort = 7979;
+    int clientPort = 6969;
 
     public string message = "pong";
 
@@ -26,10 +28,10 @@ public class UDP_Server : MonoBehaviour
     void Start()
     {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        ip = new IPEndPoint(IPAddress.Any, recivingPort);
+        ip = new IPEndPoint(IPAddress.Any, serverPort);
         socket.Bind(ip);
 
-        remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), sendingPort);
+        remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
 
         Recieving();
     }
@@ -37,32 +39,43 @@ public class UDP_Server : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Sending();
+            //Sending();
     }
 
     void Recieving()
     { 
-        thread = new Thread(threadRecivingData);
+        thread = new Thread(threadRecivingClientData);
         thread.Start();
     }
 
-    void threadRecivingData()
+    void threadRecivingClientData()
     {
-        Debug.Log("Starting Thread!");
+        Debug.Log("Starting Server Thread!");
 
-        byte[] dataSize = new byte[68];
-        int bytesRecive = socket.ReceiveFrom(dataSize, ref remote);
-
-        if (bytesRecive > 0)
+        while (!exit)
         {
-            Debug.Log("Recieved Correctly " + Encoding.UTF8.GetString(dataSize));
-        }
-        else
-        {
-            Debug.Log("Error");
-        }
+            byte[] data = new byte[68];
+            int bytesRecive = socket.ReceiveFrom(data, ref remote);
 
-        Thread.Sleep(500000);
+            string msgPing = Encoding.ASCII.GetString(data);
+            if (bytesRecive > 0)
+            {
+                if(msgPing.Contains("ping"))
+                {
+                    Debug.Log("Server Recieved Correctly: " + Encoding.ASCII.GetString(data));
+                    Thread.Sleep(500);
+                    Sending();
+                }
+                else
+                    Debug.Log("Server Recieved: " + Encoding.ASCII.GetString(data));
+            }
+            else
+            {
+                Debug.Log("Server Error: empty byte[]");
+                
+            }
+        }
+        
     }
     void Sending()
     {
@@ -72,10 +85,15 @@ public class UDP_Server : MonoBehaviour
 
         if (bytesSend == message.Length)
         {
-            Debug.Log("Send Correctly " + message);
+            Debug.Log("Server Send Correctly " + message);
         }
         else
-            Debug.Log("Error");
+            Debug.Log("Server Error not send anything");
 
+    }
+
+    private void OnDestroy()
+    {
+        socket.Close();
     }
 }

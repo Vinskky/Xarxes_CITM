@@ -9,14 +9,17 @@ using System.Threading;
 
 public class UDP_Client : MonoBehaviour
 {
+    bool exit = false;
+    bool firstTimeSend = true;
+
     Socket socket;
 
     IPEndPoint ip;
 
     EndPoint remote;
 
-    int recivingPort = 6969;
-    int sendingPort = 7979;
+    int serverPort = 7979;
+    int clientPort = 6969;
 
     public string message = "ping";
 
@@ -26,57 +29,74 @@ public class UDP_Client : MonoBehaviour
     void Start()
     {
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        ip = new IPEndPoint(IPAddress.Any, recivingPort);
+        ip = new IPEndPoint(IPAddress.Any, clientPort);
         socket.Bind(ip);
 
-        remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), sendingPort);
+        remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
 
-        Sending();
-
+        
+        Recieving();
     }
 
     // Update is called once per frame
     void Update()
     {
-        Recieving();
+       if(firstTimeSend)
+        Sending();
     }
 
 
     void Sending()
     {
+        firstTimeSend = false;
         byte[] data = Encoding.ASCII.GetBytes(message); ;
         int bytesSend = socket.SendTo(data, message.Length, SocketFlags.None, remote);
 
         if (bytesSend == message.Length)
         {
-            Debug.Log("Send Correctly " + message);
+            Debug.Log("Client Send Correctly " + message);
         }
         else
-            Debug.Log("Error");
+            Debug.Log("Client Error sending");
     }
 
     void Recieving()
     {
-        thread = new Thread(threadRecivingData);
+        thread = new Thread(threadRecivingServerData);
         thread.Start();
     }
 
-    void threadRecivingData()
+    void threadRecivingServerData()
     {
-        Debug.Log("Starting Thread!");
-
-        byte[] dataSize = new byte[68];
-        int bytesRecive = socket.ReceiveFrom(dataSize, ref remote);
-
-        if (bytesRecive > 0)
+        Debug.Log("Starting Client Thread!");
+        while (!exit)
         {
-            Debug.Log("Recieved Correctly " + Encoding.UTF8.GetString(dataSize));
-        }
-        else
-        {
-            Debug.Log("Error");
-        }
 
-        Thread.Sleep(500000);
+            byte[] dataSize = new byte[68];
+            int bytesRecive = socket.ReceiveFrom(dataSize, ref remote);
+
+            string msgRecieved = Encoding.ASCII.GetString(dataSize);
+            if (bytesRecive > 0)
+            {
+                if(msgRecieved.Contains("pong"))
+                {
+                    Debug.Log("Client Recieved Correctly " + Encoding.ASCII.GetString(dataSize));
+                    Thread.Sleep(500);
+                    Sending();
+                }
+                
+            }
+            else
+            {
+                Debug.Log("Client Error");
+            }
+
+            Thread.Sleep(500);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        socket.Close();
     }
 }
