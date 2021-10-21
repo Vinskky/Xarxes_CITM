@@ -12,7 +12,11 @@ public class UDP_Client : MonoBehaviour
     bool exit = false;
     bool firstTimeSend = true;
 
+    //Sending a message to the Client if we don't have a response from Server.
+    bool backupSend = true;
+
     Socket socket;
+    Socket abortSocket;
 
     IPEndPoint ip;
 
@@ -48,16 +52,20 @@ public class UDP_Client : MonoBehaviour
 
     void Sending()
     {
-        firstTimeSend = false;
-        byte[] data = Encoding.ASCII.GetBytes(message); ;
-        int bytesSend = socket.SendTo(data, message.Length, SocketFlags.None, remote);
-
-        if (bytesSend == message.Length)
+        if (socket != null)
         {
-            Debug.Log("Client Send Correctly " + message);
+            firstTimeSend = false;
+            byte[] data = Encoding.ASCII.GetBytes(message); ;
+            int bytesSend = socket.SendTo(data, message.Length, SocketFlags.None, remote);
+
+            if (bytesSend == message.Length)
+            {
+                Debug.Log("Client: Send Correctly " + message);
+            }
+
+            else
+                Debug.Log("Client: Error sending");
         }
-        else
-            Debug.Log("Client Error sending");
     }
 
     void Recieving()
@@ -68,35 +76,76 @@ public class UDP_Client : MonoBehaviour
 
     void threadRecivingServerData()
     {
-        Debug.Log("Starting Client Thread!");
+        Debug.Log("Client: Starting Thread!");
         while (!exit)
         {
-
             byte[] dataSize = new byte[68];
-            int bytesRecive = socket.ReceiveFrom(dataSize, ref remote);
 
-            string msgRecieved = Encoding.ASCII.GetString(dataSize);
-            if (bytesRecive > 0)
+            try
             {
-                if(msgRecieved.Contains("pong"))
+                int bytesRecive = socket.ReceiveFrom(dataSize, ref remote);
+
+                string msgRecieved = Encoding.ASCII.GetString(dataSize);
+
+                if (bytesRecive > 0)
                 {
-                    Debug.Log("Client Recieved Correctly " + Encoding.ASCII.GetString(dataSize));
-                    Thread.Sleep(500);
-                    Sending();
+                    if (msgRecieved.Contains("pong"))
+                    {
+                        Debug.Log("Client Recieved Correctly " + Encoding.ASCII.GetString(dataSize));
+                        Thread.Sleep(1000);
+                        Sending();
+                    }
+                    else if (msgRecieved.Contains("abort"))
+                    {
+                        Debug.Log("Client: Disconnect");
+                        socket.Close();
+                        //abortSocket.Close();
+                        exit = true;
+                        
+                        break;  
+                    }
+
                 }
-                
+                else
+                {
+                    Debug.Log("Client: Message Error, empty byte[]");
+                }
             }
-            else
+            catch 
             {
-                Debug.Log("Client Error");
+                if (thread.IsAlive)
+                {
+                    Debug.Log("Client: No response from Server");
+
+                    if (backupSend == true)
+                    {
+                        Sending();
+                        backupSend = false;
+                    }
+                    else
+                    {
+                        Debug.Log("Client: There is no Server found");
+                        //Disconnect Socket and Threat 
+                        //Close App
+                        socket.Close();
+                        exit = true;
+
+                        Debug.Log("Client: Disconnect");
+                        break;
+                    }
+                }
             }
 
-            Thread.Sleep(500);
         }
     }
 
     private void OnDestroy()
     {
-        socket.Close();
+        if(thread.IsAlive && exit == false)
+        { 
+            remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
+            message = "abort";
+            Sending();
+        }
     }
 }

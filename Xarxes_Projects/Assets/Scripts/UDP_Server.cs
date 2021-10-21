@@ -10,8 +10,13 @@ using System.Threading;
 public class UDP_Server : MonoBehaviour
 {
     bool exit = false;
-    bool serverSend = false;
+    //bool serverSend = false;
+
+    //Sending a message to the Server if we don't have a response from the Client.
+    bool backupSend = true;
+
     Socket socket;
+    Socket abortSocket;
 
     IPEndPoint ip;
 
@@ -50,50 +55,93 @@ public class UDP_Server : MonoBehaviour
 
     void threadRecivingClientData()
     {
-        Debug.Log("Starting Server Thread!");
+        Debug.Log("Server: Starting Thread!");
 
         while (!exit)
         {
             byte[] data = new byte[68];
-            int bytesRecive = socket.ReceiveFrom(data, ref remote);
 
-            string msgPing = Encoding.ASCII.GetString(data);
-            if (bytesRecive > 0)
+            try
             {
-                if(msgPing.Contains("ping"))
+                int bytesRecive = socket.ReceiveFrom(data, ref remote);
+
+                string msgPing = Encoding.ASCII.GetString(data);
+
+                if (bytesRecive > 0)
                 {
-                    Debug.Log("Server Recieved Correctly: " + Encoding.ASCII.GetString(data));
-                    Thread.Sleep(500);
-                    Sending();
+                    if (msgPing.Contains("ping"))
+                    {
+                        Debug.Log("Server: Recieved Correctly: " + Encoding.ASCII.GetString(data));
+                        Thread.Sleep(1000);
+                        Sending();
+                    }
+                    else if (msgPing.Contains("abort"))
+                    {
+                        Debug.Log("Server: Disconnect");
+                        socket.Close();
+                        //abortSocket.Close();
+                        exit = true;
+                       
+                        break;
+                    }
                 }
                 else
-                    Debug.Log("Server Recieved: " + Encoding.ASCII.GetString(data));
+                {
+                    Debug.Log("Server: Message Error, empty byte[]");
+
+                }
             }
-            else
+            catch
             {
-                Debug.Log("Server Error: empty byte[]");
-                
+                if (thread.IsAlive)
+                {
+                    Debug.Log("Server: No response from Client");
+
+                    if (backupSend == true)
+                    {
+                        Sending();
+                        backupSend = false;
+                    }
+                    else
+                    {
+                        Debug.Log("Server: There is no Client found");
+                        //Disconnect Socket and Threat 
+                        //Close App
+                        socket.Close();
+                        exit = true;
+
+                        Debug.Log("Server: Disconnect");
+                        break;
+                    }
+                }
             }
         }
         
     }
     void Sending()
     {
-
-        byte[] data = Encoding.ASCII.GetBytes(message); ;
-        int bytesSend = socket.SendTo(data, message.Length, SocketFlags.None, remote);
-
-        if (bytesSend == message.Length)
+        if (socket != null)
         {
-            Debug.Log("Server Send Correctly " + message);
-        }
-        else
-            Debug.Log("Server Error not send anything");
+            byte[] data = Encoding.ASCII.GetBytes(message); ;
+            int bytesSend = socket.SendTo(data, message.Length, SocketFlags.None, remote);
 
+            if (bytesSend == message.Length)
+            {
+                Debug.Log("Server: Send Correctly " + message);
+            }
+            else
+                Debug.Log("Server: Error not send anything");
+        }
     }
 
     private void OnDestroy()
     {
-        socket.Close();
+        if (thread.IsAlive && exit == false)
+        {
+            remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
+            message = "abort";
+
+            Sending();
+        }
     }
 }
