@@ -16,7 +16,6 @@ public class UDP_Server : MonoBehaviour
     bool backupSend = true;
 
     Socket socket;
-    Socket abortSocket;
 
     IPEndPoint ip;
 
@@ -38,7 +37,7 @@ public class UDP_Server : MonoBehaviour
 
         remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
 
-        Recieving();
+        Receiving();
     }
 
     // Update is called once per frame
@@ -47,7 +46,7 @@ public class UDP_Server : MonoBehaviour
             //Sending();
     }
 
-    void Recieving()
+    void Receiving()
     { 
         thread = new Thread(threadRecivingClientData);
         thread.Start();
