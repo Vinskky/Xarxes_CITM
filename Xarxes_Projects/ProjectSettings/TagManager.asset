@@ -8,6 +8,8 @@ TagManager:
   - UDP_Client
   - TCP_Client
   - TCP_Server
+  - TCP_ServerB
+  - TCP_ClientB
   layers:
   - Default
   - TransparentFX

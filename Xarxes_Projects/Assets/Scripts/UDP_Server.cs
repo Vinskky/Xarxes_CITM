@@ -121,8 +121,8 @@ public class UDP_Server : MonoBehaviour
                     }
                     else
                     {
-                        Debug.Log("Server: There is no Client found");
-                        MenuManager.consoleTestServer.Add("Server: There is no Client found");
+                        Debug.Log("Server: There is no Client found, closing Server");
+                        MenuManager.consoleTestServer.Add("Server: There is no Client found, closing Server");
                         //Disconnect Socket and Threat 
                         //Close App
                         socket.Close();

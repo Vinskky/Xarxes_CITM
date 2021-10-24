@@ -7,10 +7,12 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-public class TCP_Server : MonoBehaviour
+public class TCP_ServerB : MonoBehaviour
 {
     bool exit = false;
     bool closeServer = false;
+
+    bool backupSend = true;
 
     //This socket accepts clients
     Socket socketServer;
@@ -20,7 +22,7 @@ public class TCP_Server : MonoBehaviour
 
     IPEndPoint ip;
 
-    int serverPort = 5333;
+    int serverPort = 4333;
 
     public string message = "pong";
 
@@ -42,19 +44,19 @@ public class TCP_Server : MonoBehaviour
 
     public void Init()
     {
-        MenuManager.textTestServer = "TCP Server";
+        MenuManager.textTestServer = "TCP Server B";
 
         socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Any, serverPort);
         socketServer.Bind(ip);
 
-        socketServer.Listen(1);
+        socketServer.Listen(10);
 
         Receiving();
     }
 
-        // Update is called once per frame
-        void Update()
+     // Update is called once per frame
+    void Update()
     {
         if (closeServer)
         {
@@ -125,6 +127,14 @@ public class TCP_Server : MonoBehaviour
                         Thread.Sleep(500);
                         Sending();
                     }
+                    else if (msgRecieved.Contains("disconnect"))
+                    {
+                        Debug.Log("Server: Received Correctly: " + finalMsg);
+                        MenuManager.consoleTestServer.Add("Server: Received Correctly: " + finalMsg);
+                        socketClient.Close();
+                        socketClient = null;
+                        continue;
+                    }
                     else if (msgRecieved.Contains("abort"))
                     {
                         Debug.Log("Server: Disconnect");
@@ -139,7 +149,28 @@ public class TCP_Server : MonoBehaviour
             }
             catch
             {
-                
+                if (thread.IsAlive)
+                {
+                    Debug.Log("Server: No response from Client");
+                    MenuManager.consoleTestServer.Add("Server: No response from Client");
+                    if (backupSend == true)
+                    {
+                        Sending();
+                        backupSend = false;
+                    }
+                    else
+                    {
+                        Debug.Log("Server: There is no Client found, closing Server");
+                        MenuManager.consoleTestServer.Add("Server: There is no Client found, closing Server");
+                        socketServer.Close();
+                        socketServer = null;
+                        exit = true;
+
+                        Debug.Log("Server: Disconnect");
+                        MenuManager.consoleTestServer.Add("Server: Disconnect");
+                        break;
+                    }
+                }
             }
         }
     }

@@ -25,6 +25,7 @@ public class MenuManager : MonoBehaviour
     public Canvas mainMenuCanvas;
 
     bool tcpActive = false;
+    bool tcpActiveB = false;
     bool udpActive = false;
 
     private void Start()
@@ -59,7 +60,9 @@ public class MenuManager : MonoBehaviour
             serverObj.GetComponent<UDP_Server>().Init();
 
             GameObject.FindGameObjectWithTag("TCP_Server").SetActive(false); 
-            GameObject.FindGameObjectWithTag("TCP_Client").SetActive(false); 
+            GameObject.FindGameObjectWithTag("TCP_Client").SetActive(false);
+            GameObject.FindGameObjectWithTag("TCP_ServerB").SetActive(false);
+            GameObject.FindGameObjectWithTag("TCP_ClientB").SetActive(false);
 
             udpActive = false;
         }
@@ -73,8 +76,25 @@ public class MenuManager : MonoBehaviour
 
             GameObject.FindGameObjectWithTag("UDP_Server").SetActive(false);
             GameObject.FindGameObjectWithTag("UDP_Client").SetActive(false);
+            GameObject.FindGameObjectWithTag("TCP_ServerB").SetActive(false);
+            GameObject.FindGameObjectWithTag("TCP_ClientB").SetActive(false);
 
             tcpActive = false;
+        }
+
+        if (tcpActiveB == true && GameObject.FindGameObjectWithTag("TCP_ServerB") != null && GameObject.FindGameObjectWithTag("TCP_ClientB") != null)
+        {
+            serverObj = GameObject.FindGameObjectWithTag("TCP_ServerB");
+            clientObj = GameObject.FindGameObjectWithTag("TCP_ClientB");
+            clientObj.GetComponent<TCP_ClientB>().Init();
+            serverObj.GetComponent<TCP_ServerB>().Init();
+
+            GameObject.FindGameObjectWithTag("UDP_Server").SetActive(false);
+            GameObject.FindGameObjectWithTag("UDP_Client").SetActive(false);
+            GameObject.FindGameObjectWithTag("TCP_Server").SetActive(false);
+            GameObject.FindGameObjectWithTag("TCP_Client").SetActive(false);
+
+            tcpActiveB = false;
         }
 
     }
@@ -103,7 +123,13 @@ public class MenuManager : MonoBehaviour
 
     public void TCP2_Button()
     {
+        mainMenuCanvas.enabled = false;
+        playModeCanvas.enabled = true;
 
+        SceneManager.LoadScene("Client", LoadSceneMode.Additive);
+        SceneManager.LoadScene("Server", LoadSceneMode.Additive);
+
+        tcpActiveB = true;
     }
 
     void DisplayServerList()
