@@ -13,6 +13,8 @@ public class TCP_ClientB : MonoBehaviour
     bool firstTimeSend = true;
     bool backUpSend = false;
 
+    public bool destroyClient = false;
+
     Socket socket;
 
     IPEndPoint ip;
@@ -37,20 +39,27 @@ public class TCP_ClientB : MonoBehaviour
     }
 
     public void Init()
-    {
+    { 
         MenuManager.textTestClient = "TCP Client B";
 
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
 
+        destroyClient = false;
+        exit = false;
+        firstTimeSend = true;
+        message = "ping";
+        countPongs = 0;
+
         Receiving();
     }
 
-        // Update is called once per frame
-        void Update()
+    // Update is called once per frame
+    void Update()
     {
-        if (firstTimeSend)
-            Sending();
+        /* if (firstTimeSend)
+             Sending();*/
+            
     }
 
     void Sending()
@@ -86,7 +95,10 @@ public class TCP_ClientB : MonoBehaviour
 
         Debug.Log("Client: Connected to the server " + ip.Address + " at port " + ip.Port);
         MenuManager.consoleTestClient.Add("Client: Connected to the server " + ip.Address + " at port " + ip.Port);
-        
+
+        if (firstTimeSend)
+            Sending();
+
         while (!exit)
         {
             byte[] data = new byte[68];
@@ -112,6 +124,7 @@ public class TCP_ClientB : MonoBehaviour
                             message = "disconnect";
                             Sending();
                             exit = true;
+                            destroyClient = true;
                             break;
                         }
                     }

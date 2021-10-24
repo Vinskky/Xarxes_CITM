@@ -100,6 +100,11 @@ public class MenuManager : MonoBehaviour
             tcpActiveB = false;
         }
 
+        if(GameObject.Find("TCP_ServerB(Clone)") != null  && clientObj.GetComponent<TCP_ClientB>().destroyClient == true)
+        {
+            Destroy(clientObj);
+        }
+
     }
 
     public void UDP_Button()
@@ -138,6 +143,7 @@ public class MenuManager : MonoBehaviour
     public void AddNewClient()
     {
         Instantiate(clientObj);
+        clientObj.GetComponent<TCP_ClientB>().Init();
     }
 
     public void ReturnButton()
