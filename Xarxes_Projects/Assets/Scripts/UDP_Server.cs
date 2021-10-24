@@ -72,8 +72,8 @@ public class UDP_Server : MonoBehaviour
                 {
                     if (finalMsg.Contains("ping"))
                     {
-                        Debug.Log("Server: Recieved Correctly: " + finalMsg);
-                        MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
+                        Debug.Log("Server: Received Correctly: " + finalMsg);
+                        MenuManager.consoleTestServer.Add("Server: Received Correctly: " + finalMsg);
                         
                         Thread.Sleep(500);
                         Sending();

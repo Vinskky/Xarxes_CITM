@@ -135,11 +135,11 @@ GameObject:
   - component: {fileID: 1197325024}
   m_Layer: 0
   m_Name: TCP_Client
-  m_TagString: Untagged
+  m_TagString: TCP_Client
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1197325023
 Transform:
   m_ObjectHideFlags: 0
@@ -179,7 +179,7 @@ GameObject:
   - component: {fileID: 1300185676}
   m_Layer: 0
   m_Name: UDP_Client
-  m_TagString: Untagged
+  m_TagString: UDP_Client
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -197,7 +197,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   message: ping
-  menuOutput: {fileID: 0}
 --- !u!4 &1300185677
 Transform:
   m_ObjectHideFlags: 0

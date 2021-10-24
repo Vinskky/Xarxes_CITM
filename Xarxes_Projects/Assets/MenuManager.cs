@@ -23,6 +23,9 @@ public class MenuManager : MonoBehaviour
     public Canvas playModeCanvas;
     public Canvas mainMenuCanvas;
 
+    bool tcpActive = false;
+    bool udpActive = false;
+
     private void Start()
     {
         consoleServer.text = "";
@@ -32,6 +35,7 @@ public class MenuManager : MonoBehaviour
 
         consoleTestClient = new List<string>();
         consoleTestServer = new List<string>();
+
     }
 
     private void Update()
@@ -55,6 +59,23 @@ public class MenuManager : MonoBehaviour
                 consoleClient.text += consoleTestClient[i].ToString() + "\n";
             }
         }
+
+        if (udpActive == true)
+        {
+            GameObject.FindGameObjectWithTag("TCP_Server").SetActive(false); 
+            GameObject.FindGameObjectWithTag("TCP_Client").SetActive(false); 
+
+            udpActive = false;
+        }
+
+        if(tcpActive == true)
+        {
+            GameObject.FindGameObjectWithTag("UDP_Server").SetActive(false);
+            GameObject.FindGameObjectWithTag("UDP_Client").SetActive(false);
+
+            tcpActive = false;
+        }
+
     }
 
     public void UDP_Button()
@@ -64,12 +85,19 @@ public class MenuManager : MonoBehaviour
 
         SceneManager.LoadScene("Client", LoadSceneMode.Additive);
         SceneManager.LoadScene("Server", LoadSceneMode.Additive);
-        
+
+        udpActive = true;
     }
 
     public void TCP_Button()
     {
+        mainMenuCanvas.enabled = false;
+        playModeCanvas.enabled = true;
 
+        SceneManager.LoadScene("Client", LoadSceneMode.Additive);
+        SceneManager.LoadScene("Server", LoadSceneMode.Additive);
+
+        tcpActive = true;
     }
 
     public void TCP2_Button()

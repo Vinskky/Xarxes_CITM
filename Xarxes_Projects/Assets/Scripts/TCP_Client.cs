@@ -91,8 +91,8 @@ public class TCP_Client : MonoBehaviour
                 {
                     if (msgRecieved.Contains("pong"))
                     {
-                        Debug.Log("Client: Recieved Correctly: " + finalMsg);
-                        MenuManager.consoleTestClient.Add("Client: Recieved Correctly: " + finalMsg);
+                        Debug.Log("Client: Received Correctly: " + finalMsg);
+                        MenuManager.consoleTestClient.Add("Client: Received Correctly: " + finalMsg);
 
                         Thread.Sleep(500);
                         Sending();
@@ -101,7 +101,8 @@ public class TCP_Client : MonoBehaviour
                         {   
                             message = "abort";
                             Sending();
-                            continue;
+                            exit = true;
+                            break;
                         }
                     }
                 }

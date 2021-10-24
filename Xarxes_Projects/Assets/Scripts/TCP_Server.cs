@@ -106,8 +106,8 @@ public class TCP_Server : MonoBehaviour
                 {
                     if (msgRecieved.Contains("ping"))
                     {
-                        Debug.Log("Server: Recieved Correctly: " + finalMsg);
-                        MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
+                        Debug.Log("Server: Received Correctly: " + finalMsg);
+                        MenuManager.consoleTestServer.Add("Server: Received Correctly: " + finalMsg);
 
                         Thread.Sleep(500);
                         Sending();
@@ -115,10 +115,10 @@ public class TCP_Server : MonoBehaviour
                     else if (msgRecieved.Contains("abort"))
                     {
                         Debug.Log("Server: Disconnect");
-                        MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
+                        MenuManager.consoleTestServer.Add("Server: Disconnect");
                         socketClient.Close();
                         socketClient = null;
-                        //socketServer.Close();
+                        socketServer.Close();
                         exit = true;
                         break;
                     }

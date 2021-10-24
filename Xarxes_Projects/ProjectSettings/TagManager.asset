@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - UDP_Server
+  - UDP_Client
+  - TCP_Client
+  - TCP_Server
   layers:
   - Default
   - TransparentFX
