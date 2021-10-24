@@ -31,6 +31,19 @@ public class UDP_Server : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*MenuManager.textTestServer = "UDP Server";
+
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        ip = new IPEndPoint(IPAddress.Any, serverPort);
+        socket.Bind(ip);
+
+        remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
+
+        Receiving();*/
+    }
+
+    public void Init()
+    {
         MenuManager.textTestServer = "UDP Server";
 
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -134,6 +147,7 @@ public class UDP_Server : MonoBehaviour
             if (bytesSend == message.Length)
             {
                 Debug.Log("Server: Send Correctly " + message);
+                MenuManager.consoleTestServer.Add("Server: Send Correctly " + message);
             }
             else
                 Debug.Log("Server: Error not send anything");
@@ -144,10 +158,14 @@ public class UDP_Server : MonoBehaviour
     {
         if (thread.IsAlive && exit == false)
         {
-            remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
-            message = "abort";
+            if(thread != null)
+            {
+                remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
+                message = "abort";
 
-            Sending();
+                Sending();
+            }
+            
         }
     }
 }

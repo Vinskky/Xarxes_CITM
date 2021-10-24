@@ -14,7 +14,8 @@ public class MenuManager : MonoBehaviour
     public Text consoleClient;
     public Text consoleServer;
 
-
+    private GameObject serverObj;
+    private GameObject clientObj;
     public static string textTestClient { get; set; }
     public static string textTestServer { get; set; }
     public static List<string> consoleTestClient { get; set; }
@@ -42,34 +43,34 @@ public class MenuManager : MonoBehaviour
     {
         protocolTypeClient.text = textTestClient;
         protocolTypeServer.text = textTestServer;
+        
+        if (consoleTestServer.Count > 0)
+            DisplayServerList();
 
-        if(consoleTestServer != null)
+
+        if (consoleTestClient.Count > 0)
+            DisplayClientList();
+
+        if (udpActive == true && GameObject.FindGameObjectWithTag("UDP_Server") != null && GameObject.FindGameObjectWithTag("UDP_Client") != null)
         {
-            for (int i = 0; i < consoleTestServer.Count; ++i)
-            {
-                consoleServer.text +=  consoleTestServer[i].ToString() + "\n";
-            } 
-        }
+            serverObj = GameObject.FindGameObjectWithTag("UDP_Server");
+            clientObj = GameObject.FindGameObjectWithTag("UDP_Client");
+            clientObj.GetComponent<UDP_Client>().Init();
+            serverObj.GetComponent<UDP_Server>().Init();
 
-
-        if(consoleTestClient != null)
-        {
-              for (int i = 0; i < consoleTestClient.Count; ++i)
-            {
-                consoleClient.text += consoleTestClient[i].ToString() + "\n";
-            }
-        }
-
-        if (udpActive == true)
-        {
             GameObject.FindGameObjectWithTag("TCP_Server").SetActive(false); 
             GameObject.FindGameObjectWithTag("TCP_Client").SetActive(false); 
 
             udpActive = false;
         }
 
-        if(tcpActive == true)
+        if(tcpActive == true && GameObject.FindGameObjectWithTag("TCP_Server") != null && GameObject.FindGameObjectWithTag("TCP_Client") != null)
         {
+            serverObj = GameObject.FindGameObjectWithTag("TCP_Server");
+            clientObj = GameObject.FindGameObjectWithTag("TCP_Client");
+            clientObj.GetComponent<TCP_Client>().Init();
+            serverObj.GetComponent<TCP_Server>().Init();
+
             GameObject.FindGameObjectWithTag("UDP_Server").SetActive(false);
             GameObject.FindGameObjectWithTag("UDP_Client").SetActive(false);
 
@@ -103,5 +104,19 @@ public class MenuManager : MonoBehaviour
     public void TCP2_Button()
     {
 
+    }
+
+    void DisplayServerList()
+    {
+        string[] arrayStr = consoleTestServer.ToArray();
+        string newStr = string.Join("\n", arrayStr);
+        consoleServer.text = newStr;
+    }
+
+    void DisplayClientList()
+    {
+        string[] arrayStr = consoleTestClient.ToArray();
+        string newStr = string.Join("\n", arrayStr);
+        consoleClient.text = newStr;
     }
 }

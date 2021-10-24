@@ -32,6 +32,20 @@ public class UDP_Client : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*MenuManager.textTestClient = "UDP Client";
+
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        ip = new IPEndPoint(IPAddress.Any, clientPort);
+        socket.Bind(ip);
+
+        remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
+
+
+        Receiving();*/
+    }
+
+    public void Init()
+    {
         MenuManager.textTestClient = "UDP Client";
 
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -43,7 +57,6 @@ public class UDP_Client : MonoBehaviour
 
         Receiving();
     }
-
     // Update is called once per frame
     void Update()
     {
@@ -156,10 +169,13 @@ public class UDP_Client : MonoBehaviour
     private void OnDestroy()
     {
         if(thread.IsAlive && exit == false)
-        { 
-            remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
-            message = "abort";
-            Sending();
+        {
+            if (thread != null)
+            {
+                remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
+                message = "abort";
+                Sending();
+            }
         }
     }
 }

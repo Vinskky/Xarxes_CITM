@@ -20,7 +20,7 @@ public class TCP_Server : MonoBehaviour
 
     IPEndPoint ip;
 
-    int serverPort = 7979;
+    int serverPort = 5333;
 
     public string message = "pong";
 
@@ -28,6 +28,19 @@ public class TCP_Server : MonoBehaviour
 
     // Start is called before the first frame update
     void Start()
+    {
+        /*MenuManager.textTestServer = "TCP Server";
+
+        socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        ip = new IPEndPoint(IPAddress.Any, serverPort);
+        socketServer.Bind(ip);
+
+        socketServer.Listen(10);
+
+        Receiving();*/
+    }
+
+    public void Init()
     {
         MenuManager.textTestServer = "TCP Server";
 
@@ -40,8 +53,8 @@ public class TCP_Server : MonoBehaviour
         Receiving();
     }
 
-    // Update is called once per frame
-    void Update()
+        // Update is called once per frame
+        void Update()
     {
         if (closeServer)
         {

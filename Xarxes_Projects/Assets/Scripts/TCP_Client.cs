@@ -17,7 +17,7 @@ public class TCP_Client : MonoBehaviour
 
     IPEndPoint ip;
 
-    int serverPort = 7979;
+    int serverPort = 5333;
 
     public string message = "ping";
 
@@ -28,6 +28,16 @@ public class TCP_Client : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        /*MenuManager.textTestClient = "TCP Client";
+
+        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
+
+        Receiving();*/
+    }
+
+    public void Init()
+    {
         MenuManager.textTestClient = "TCP Client";
 
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -36,8 +46,8 @@ public class TCP_Client : MonoBehaviour
         Receiving();
     }
 
-    // Update is called once per frame
-    void Update()
+        // Update is called once per frame
+        void Update()
     {
         if (firstTimeSend)
             Sending();
