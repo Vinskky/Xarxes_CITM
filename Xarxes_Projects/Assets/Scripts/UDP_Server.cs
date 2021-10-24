@@ -156,15 +156,13 @@ public class UDP_Server : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (thread.IsAlive && exit == false)
+        if (thread != null && thread.IsAlive && exit == false)
         {
-            if(thread != null)
-            {
-                remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
-                message = "abort";
+            
+            remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
+            message = "abort";
 
-                Sending();
-            }
+            Sending();
             
         }
     }

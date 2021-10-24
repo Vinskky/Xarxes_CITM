@@ -168,14 +168,13 @@ public class UDP_Client : MonoBehaviour
 
     private void OnDestroy()
     {
-        if(thread.IsAlive && exit == false)
+        if(thread != null && thread.IsAlive && exit == false)
         {
-            if (thread != null)
-            {
-                remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
-                message = "abort";
-                Sending();
-            }
+            
+            remote = new IPEndPoint(IPAddress.Parse("127.0.0.1"), clientPort);
+            message = "abort";
+            Sending();
+            
         }
     }
 }

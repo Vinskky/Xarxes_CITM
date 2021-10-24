@@ -10,6 +10,7 @@ TagManager:
   - TCP_Server
   - TCP_ServerB
   - TCP_ClientB
+  - ClientButton
   layers:
   - Default
   - TransparentFX

@@ -16,6 +16,7 @@ public class MenuManager : MonoBehaviour
 
     private GameObject serverObj;
     private GameObject clientObj;
+    public GameObject clientButton;
     public static string textTestClient { get; set; }
     public static string textTestServer { get; set; }
     public static List<string> consoleTestClient { get; set; }
@@ -63,6 +64,7 @@ public class MenuManager : MonoBehaviour
             GameObject.FindGameObjectWithTag("TCP_Client").SetActive(false);
             GameObject.FindGameObjectWithTag("TCP_ServerB").SetActive(false);
             GameObject.FindGameObjectWithTag("TCP_ClientB").SetActive(false);
+            clientButton.SetActive(false);
 
             udpActive = false;
         }
@@ -78,6 +80,7 @@ public class MenuManager : MonoBehaviour
             GameObject.FindGameObjectWithTag("UDP_Client").SetActive(false);
             GameObject.FindGameObjectWithTag("TCP_ServerB").SetActive(false);
             GameObject.FindGameObjectWithTag("TCP_ClientB").SetActive(false);
+            clientButton.SetActive(false);
 
             tcpActive = false;
         }
@@ -132,6 +135,38 @@ public class MenuManager : MonoBehaviour
         tcpActiveB = true;
     }
 
+    public void AddNewClient()
+    {
+        Instantiate(clientObj);
+    }
+
+    public void ReturnButton()
+    {
+        mainMenuCanvas.enabled = true;
+        playModeCanvas.enabled = false;
+
+        SceneManager.UnloadScene(1);
+        SceneManager.UnloadScene(2);
+
+        if(clientButton.activeSelf == false)
+            clientButton.SetActive(true);
+
+
+        consoleServer.text = "";
+        consoleClient.text = "";
+
+        consoleTestServer.Clear();
+        consoleTestClient.Clear();
+
+
+        udpActive = false;
+        tcpActive = false;
+        tcpActiveB = false;
+    }
+    public void CloseApp()
+    {
+        Application.Quit();
+    }
     void DisplayServerList()
     {
         string[] arrayStr = consoleTestServer.ToArray();

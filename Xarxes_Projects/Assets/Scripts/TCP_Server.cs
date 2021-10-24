@@ -147,7 +147,7 @@ public class TCP_Server : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (thread.IsAlive && exit == false)
+        if (thread != null && thread.IsAlive && exit == false)
         {
             closeServer = true;
         }
