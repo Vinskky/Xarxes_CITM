@@ -74,7 +74,8 @@ public class UDP_Server : MonoBehaviour
                     {
                         Debug.Log("Server: Recieved Correctly: " + finalMsg);
                         MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
-                        Thread.Sleep(1000);
+                        
+                        Thread.Sleep(500);
                         Sending();
                     }
                     else if (msgPing.Contains("abort"))

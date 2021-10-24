@@ -63,10 +63,14 @@ public class UDP_Client : MonoBehaviour
             if (bytesSend == message.Length)
             {
                 Debug.Log("Client: Send Correctly " + message);
+                MenuManager.consoleTestClient.Add("Client: Send Correctly " + message);
             }
 
             else
+            {
                 Debug.Log("Client: Error sending");
+                MenuManager.consoleTestClient.Add("Client: Error sending");
+            }
         }
     }
 
@@ -79,6 +83,7 @@ public class UDP_Client : MonoBehaviour
     void threadRecivingServerData()
     {
         Debug.Log("Client: Starting Thread!");
+        MenuManager.consoleTestClient.Add("Client: Starting Thread!");
         while (!exit)
         {
             byte[] data = new byte[68];
@@ -88,18 +93,21 @@ public class UDP_Client : MonoBehaviour
                 int bytesRecive = socket.ReceiveFrom(data, ref remote);
 
                 string msgRecieved = Encoding.ASCII.GetString(data);
-
+                string finalMsg = msgRecieved.Trim('\0');
                 if (bytesRecive > 0)
                 {
                     if (msgRecieved.Contains("pong"))
                     {
-                        Debug.Log("Client Recieved Correctly " + Encoding.ASCII.GetString(data));
-                        Thread.Sleep(1000);
+                        Debug.Log("Client Recieved Correctly " + finalMsg);
+                        MenuManager.consoleTestClient.Add("Client Recieved Correctly " + finalMsg);
+
+                        Thread.Sleep(500);
                         Sending();
                     }
                     else if (msgRecieved.Contains("abort"))
                     {
                         Debug.Log("Client: Disconnect");
+                        MenuManager.consoleTestClient.Add("Client: Disconnect");
                         socket.Close();
                         //abortSocket.Close();
                         exit = true;
@@ -111,6 +119,7 @@ public class UDP_Client : MonoBehaviour
                 else
                 {
                     Debug.Log("Client: Message Error, empty byte[]");
+                    MenuManager.consoleTestClient.Add("Client: Message Error, empty byte[]");
                 }
             }
             catch 
@@ -118,6 +127,7 @@ public class UDP_Client : MonoBehaviour
                 if (thread.IsAlive)
                 {
                     Debug.Log("Client: No response from Server");
+                    MenuManager.consoleTestClient.Add("Client: No response from Server");
 
                     if (backupSend == true)
                     {
@@ -127,12 +137,14 @@ public class UDP_Client : MonoBehaviour
                     else
                     {
                         Debug.Log("Client: There is no Server found");
+                        MenuManager.consoleTestClient.Add("Client: There is no Server found");
                         //Disconnect Socket and Threat 
                         //Close App
                         socket.Close();
                         exit = true;
 
                         Debug.Log("Client: Disconnect");
+                        MenuManager.consoleTestClient.Add("Client: Disconnect");
                         break;
                     }
                 }

@@ -28,6 +28,8 @@ public class TCP_Client : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        MenuManager.textTestClient = "TCP Client";
+
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), serverPort);
 
@@ -52,9 +54,13 @@ public class TCP_Client : MonoBehaviour
             if (bytesSend == message.Length)
             {
                 Debug.Log("Client: Send Correctly " + message);
+                MenuManager.consoleTestClient.Add("Client: Send Correctly " + message);
             }
             else
+            {
                 Debug.Log("Client: Error sending");
+                MenuManager.consoleTestClient.Add("Client: Error sending");
+            }
         }
     }
 
@@ -69,7 +75,8 @@ public class TCP_Client : MonoBehaviour
         socket.Connect(ip);
 
         Debug.Log("Client: Connected to the server " + ip.Address + " at port " + ip.Port);
-
+        MenuManager.consoleTestClient.Add("Client: Connected to the server " + ip.Address + " at port " + ip.Port);
+        
         while (!exit)
         {
             byte[] data = new byte[68];
@@ -79,12 +86,15 @@ public class TCP_Client : MonoBehaviour
                 int receivedBytes = socket.Receive(data);
 
                 string msgRecieved = Encoding.ASCII.GetString(data);
-
+                string finalMsg = msgRecieved.Trim('\0');
                 if (receivedBytes > 0)
                 {
                     if (msgRecieved.Contains("pong"))
                     {
-                        Debug.Log("Client: Recieved Correctly: " + Encoding.ASCII.GetString(data));
+                        Debug.Log("Client: Recieved Correctly: " + finalMsg);
+                        MenuManager.consoleTestClient.Add("Client: Recieved Correctly: " + finalMsg);
+
+                        Thread.Sleep(500);
                         Sending();
                         countPongs++;
                         if(countPongs == 5)
@@ -101,6 +111,7 @@ public class TCP_Client : MonoBehaviour
                 if(socket != null && backUpSend == false)
                 {
                     Debug.Log("Client: Did not get message from server.");
+                    MenuManager.consoleTestClient.Add("Client: Did not get message from server.");
                     backUpSend = true;
                     message = "ping";
                     Sending();

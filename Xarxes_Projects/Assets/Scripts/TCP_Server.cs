@@ -29,6 +29,8 @@ public class TCP_Server : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        MenuManager.textTestServer = "TCP Server";
+
         socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Any, serverPort);
         socketServer.Bind(ip);
@@ -60,9 +62,14 @@ public class TCP_Server : MonoBehaviour
             if (bytesSend == message.Length)
             {
                 Debug.Log("Server: Send Correctly " + message);
+                MenuManager.consoleTestServer.Add("Server: Send Correctly " + message);
+
             }
             else
+            {
                 Debug.Log("Server: Error not send anything");
+                MenuManager.consoleTestServer.Add("Server: Error not send anything");
+            }
         }
     }
 
@@ -84,6 +91,7 @@ public class TCP_Server : MonoBehaviour
                 socketClient = socketServer.Accept();
 
                 Debug.Log("Server: Client connected in the server " + ip.Address + " at port " + ip.Port);
+                MenuManager.consoleTestServer.Add("Server: Client connected in the server " + ip.Address + " at port " + ip.Port);
             }
 
             byte[] data = new byte[68];
@@ -93,17 +101,21 @@ public class TCP_Server : MonoBehaviour
                 int receivedBytes = socketClient.Receive(data);
 
                 string msgRecieved = Encoding.ASCII.GetString(data);
-
+                string finalMsg = msgRecieved.Trim('\0');
                 if (receivedBytes > 0)
                 {
                     if (msgRecieved.Contains("ping"))
                     {
-                        Debug.Log("Server: Recieved Correctly: " + Encoding.ASCII.GetString(data));
+                        Debug.Log("Server: Recieved Correctly: " + finalMsg);
+                        MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
+
+                        Thread.Sleep(500);
                         Sending();
                     }
                     else if (msgRecieved.Contains("abort"))
                     {
                         Debug.Log("Server: Disconnect");
+                        MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
                         socketClient.Close();
                         socketClient = null;
                         //socketServer.Close();

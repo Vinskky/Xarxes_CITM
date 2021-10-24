@@ -48,13 +48,13 @@ public class MenuManager : MonoBehaviour
         }
 
 
-        /* if(consoleTestClient != null)
+        if(consoleTestClient != null)
         {
               for (int i = 0; i < consoleTestClient.Count; ++i)
             {
-                consoleClient.text = consoleTestClient[i].ToString() + "\n";
+                consoleClient.text += consoleTestClient[i].ToString() + "\n";
             }
-        }*/
+        }
     }
 
     public void UDP_Button()
