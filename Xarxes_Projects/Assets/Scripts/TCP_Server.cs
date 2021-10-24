@@ -10,6 +10,7 @@ using System.Threading;
 public class TCP_Server : MonoBehaviour
 {
     bool exit = false;
+    bool closeServer = false;
 
     //This socket accepts clients
     Socket socketServer;
@@ -32,7 +33,7 @@ public class TCP_Server : MonoBehaviour
         ip = new IPEndPoint(IPAddress.Any, serverPort);
         socketServer.Bind(ip);
 
-        socketServer.Listen(1);
+        socketServer.Listen(10);
 
         Receiving();
     }
@@ -40,7 +41,13 @@ public class TCP_Server : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (closeServer)
+        {
+            socketClient.Close();
+            socketServer.Close();
+            
+            thread.Abort();
+        }
     }
 
     void Sending()
@@ -67,12 +74,18 @@ public class TCP_Server : MonoBehaviour
 
     void threadRecivingServerData()
     {
-        socketClient = socketServer.Accept();
+        //socketClient = socketServer.Accept();
 
-        Debug.Log("Server: Client connected in the server " + ip.Address + " at port " + ip.Port);
 
         while (!exit)
-        { 
+        {
+            if (socketClient == null)
+            {
+                socketClient = socketServer.Accept();
+
+                Debug.Log("Server: Client connected in the server " + ip.Address + " at port " + ip.Port);
+            }
+
             byte[] data = new byte[68];
 
             try
@@ -92,7 +105,8 @@ public class TCP_Server : MonoBehaviour
                     {
                         Debug.Log("Server: Disconnect");
                         socketClient.Close();
-                        socketServer.Close();
+                        socketClient = null;
+                        //socketServer.Close();
                         exit = true;
                         break;
                     }
@@ -100,12 +114,17 @@ public class TCP_Server : MonoBehaviour
             }
             catch
             {
-
+                
             }
         }
     }
+
+
     private void OnDestroy()
     {
-      
+        if (thread.IsAlive && exit == false)
+        {
+            closeServer = true;
+        }
     }
 }

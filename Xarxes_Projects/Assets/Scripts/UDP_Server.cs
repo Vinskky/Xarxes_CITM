@@ -31,6 +31,8 @@ public class UDP_Server : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        MenuManager.textTestServer = "UDP Server";
+
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         ip = new IPEndPoint(IPAddress.Any, serverPort);
         socket.Bind(ip);
@@ -55,7 +57,7 @@ public class UDP_Server : MonoBehaviour
     void threadRecivingClientData()
     {
         Debug.Log("Server: Starting Thread!");
-
+        MenuManager.consoleTestServer.Add("Server: Starting Thread!");
         while (!exit)
         {
             byte[] data = new byte[68];
@@ -65,18 +67,20 @@ public class UDP_Server : MonoBehaviour
                 int bytesRecive = socket.ReceiveFrom(data, ref remote);
 
                 string msgPing = Encoding.ASCII.GetString(data);
-
+                string finalMsg = msgPing.Trim('\0');
                 if (bytesRecive > 0)
                 {
-                    if (msgPing.Contains("ping"))
+                    if (finalMsg.Contains("ping"))
                     {
-                        Debug.Log("Server: Recieved Correctly: " + Encoding.ASCII.GetString(data));
+                        Debug.Log("Server: Recieved Correctly: " + finalMsg);
+                        MenuManager.consoleTestServer.Add("Server: Recieved Correctly: " + finalMsg);
                         Thread.Sleep(1000);
                         Sending();
                     }
                     else if (msgPing.Contains("abort"))
                     {
                         Debug.Log("Server: Disconnect");
+                        MenuManager.consoleTestServer.Add("Server: Disconnect");
                         socket.Close();
                         //abortSocket.Close();
                         exit = true;
@@ -87,7 +91,7 @@ public class UDP_Server : MonoBehaviour
                 else
                 {
                     Debug.Log("Server: Message Error, empty byte[]");
-
+                    MenuManager.consoleTestServer.Add("Server: Message Error, empty byte[]");
                 }
             }
             catch
@@ -95,7 +99,7 @@ public class UDP_Server : MonoBehaviour
                 if (thread.IsAlive)
                 {
                     Debug.Log("Server: No response from Client");
-
+                    MenuManager.consoleTestServer.Add("Server: No response from Client");
                     if (backupSend == true)
                     {
                         Sending();
@@ -104,12 +108,14 @@ public class UDP_Server : MonoBehaviour
                     else
                     {
                         Debug.Log("Server: There is no Client found");
+                        MenuManager.consoleTestServer.Add("Server: There is no Client found");
                         //Disconnect Socket and Threat 
                         //Close App
                         socket.Close();
                         exit = true;
 
                         Debug.Log("Server: Disconnect");
+                        MenuManager.consoleTestServer.Add("Server: Disconnect");
                         break;
                     }
                 }

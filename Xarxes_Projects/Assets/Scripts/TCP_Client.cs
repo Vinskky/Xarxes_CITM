@@ -11,6 +11,7 @@ public class TCP_Client : MonoBehaviour
 {
     bool exit = false;
     bool firstTimeSend = true;
+    bool backUpSend = false;
 
     Socket socket;
 
@@ -52,7 +53,6 @@ public class TCP_Client : MonoBehaviour
             {
                 Debug.Log("Client: Send Correctly " + message);
             }
-
             else
                 Debug.Log("Client: Error sending");
         }
@@ -88,32 +88,37 @@ public class TCP_Client : MonoBehaviour
                         Sending();
                         countPongs++;
                         if(countPongs == 5)
-                        {
+                        {   
                             message = "abort";
                             Sending();
+                            continue;
                         }
-                    }
-                    else if (msgRecieved.Contains("abort"))
-                    {
-                        Debug.Log("Client: Disconnect");
-                        socket.Close();
-                        exit = true;
-                        break;
                     }
                 }
             }
             catch
             {
+                if(socket != null && backUpSend == false)
+                {
+                    Debug.Log("Client: Did not get message from server.");
+                    backUpSend = true;
+                    message = "ping";
+                    Sending();
+                    /*//Create new client
+                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    socket.Connect(ip);
+                    message = "ping";
+                    Sending();*/
+                }
+                else if(socket != null && backUpSend == true)
+                {
+                    socket.Close();
+                    socket = null;
+                    exit = true;
 
+                }
             }
         }
     }
-    private void OnDestroy()
-    {
-        if (thread.IsAlive && exit == false)
-        {
-            message = "abort";
-            Sending();
-        }
-    }
+ 
 }

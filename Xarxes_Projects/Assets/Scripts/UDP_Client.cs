@@ -32,6 +32,8 @@ public class UDP_Client : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        MenuManager.textTestClient = "UDP Client";
+
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         ip = new IPEndPoint(IPAddress.Any, clientPort);
         socket.Bind(ip);
