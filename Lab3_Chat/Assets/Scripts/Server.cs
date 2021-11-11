@@ -34,6 +34,7 @@ public class Server : MonoBehaviour
         socketServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Any, serverPort);
         socketServer.Bind(ip);
+        socketServer.Listen(10);
 
         Debug.Log("Server: Connected to port " + ip.Port + "with addres " + ip.Address);
     }
