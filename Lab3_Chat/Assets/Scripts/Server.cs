@@ -129,6 +129,13 @@ public class Server : MonoBehaviour
                             {
                                 case Message.MessageType.ClientToServer:
                                     {
+                                        for(int x = 0; x < acceptedClients.Count; ++x)
+                                        {
+                                            if(message.clientName == acceptedClients[x].clientName)
+                                            {
+                                                message.clientName += "_" + UnityEngine.Random.Range(0, 100);
+                                            }
+                                        }
                                         //Welcome Package
                                         acceptedClients[i].clientName = message.clientName;
                                         acceptedClients[i].clientColor = message.clientColor;
@@ -145,7 +152,7 @@ public class Server : MonoBehaviour
 
                                             Debug.Log("Connected to the chat room");
 
-                                            welcomePackage.clientText += message.clientName;
+                                            welcomePackage.clientText += message.clientName + " entered the chatroom.";
                                             foreach(ServerClient clients in allClients)
                                             {
                                                 welcomePackage.clients.Add(clients.clientName);
@@ -160,7 +167,7 @@ public class Server : MonoBehaviour
 
                                             Brodcast(welcomePackage);
 
-                                            message.clientText = " connected for the first time";
+                                            message.clientText = "Connected for the first time";
 
                                         }
                                         else
@@ -171,7 +178,7 @@ public class Server : MonoBehaviour
 
                                         }
 
-                                        Brodcast(message);
+                                        //Brodcast(message);
 
                                         break;
                                     }
@@ -179,6 +186,22 @@ public class Server : MonoBehaviour
                                 case Message.MessageType.ClientToClient:
                                     {
                                         //Direct Message
+                                        Message dm = new Message();
+                                        dm.clientName = message.clientName;
+                                        dm.clientText = message.clientText;
+                                        dm.type = Message.MessageType.ClientToClient;
+
+                                        string json = JsonUtility.ToJson(dm);
+
+                                        byte[] privateMsg = Encoding.UTF8.GetBytes(json);
+
+                                        for (int w = 0; w < acceptedClients.Count; ++w)
+                                        {
+                                            if (acceptedClients[w].clientName == message.clientName)
+                                            {
+                                                acceptedClients[w].clientSocket.Send(privateMsg);
+                                            }
+                                        }
 
                                         break;
                                     }

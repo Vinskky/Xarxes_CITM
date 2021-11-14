@@ -67,9 +67,22 @@ public class Client : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Return) && isConnected == false )
         {
             Message sendMsg = new Message();
-            sendMsg.clientName = loginField.text;
+            string[] nameData = loginField.text.Split(' ');
+            if(nameData.Length > 1)
+            {
+                for(int i = 0; i < nameData.Length; ++i)
+                {
+                    if(i == 0)
+                        sendMsg.clientName += nameData[i].ToString();
+                    else
+                        sendMsg.clientName += "_" + nameData[i].ToString();
+                }
+            }
+            else
+            {
+                sendMsg.clientName = loginField.text;
+            }
             sendMsg.type = Message.MessageType.ClientToServer;
-
             Sending(sendMsg);
 
             isConnected = true;
@@ -203,7 +216,7 @@ public class Client : MonoBehaviour
                                     case Message.MessageType.ClientToClient:
                                         {
                                             //Direct Message
-
+                                            chatText.text += message.clientText + "\n";
                                             break;
                                         }
                                     case Message.MessageType.Brodcast:
@@ -249,24 +262,6 @@ public class Client : MonoBehaviour
                 catch (Exception e)
                 {
                     Debug.Log(e.ToString());
-
-                    /*if (socket != null && backUpSend == false)
-                    {
-                        Debug.Log("Client: Did not get message from server.");
-                        backUpSend = true;
-
-                        Message sendMsg = new Message();
-                        sendMsg.clientName = inputField.text;
-                        sendMsg.type = Message.MessageType.ClientToServer;
-
-                        Sending(sendMsg);
-                    }
-                    else if (socket != null && backUpSend == true)
-                    {
-                        socket.Close();
-                        socket = null;
-                        exit = true;
-                    }*/
                 }
             }
         }
@@ -337,6 +332,23 @@ public class Client : MonoBehaviour
     {
         //check if user exist
         //send to that user message
+        bool send = false;
+        for(int i = 0; i < connectedClients.Count; ++i)
+        {
+            if(user == connectedClients[i])
+            {
+                Message dm = new Message();
+                dm.clientName = user;
+                dm.clientText = "<i> " + nameText.text + " says: " + "</i>" + msg;
+                dm.clients = connectedClients;
+                dm.type = Message.MessageType.ClientToClient;
+                Sending(dm);
+                send = true;
+            }
+        }
+
+        if (send == false)
+            chatText.text += "/whisper did not reach the intruced user, please confirm it is on the list \n";
     }
 
     void CommandChangeName(string newName)
