@@ -162,43 +162,62 @@ public class Client : MonoBehaviour
                     {
                         string dataMsg = Encoding.UTF8.GetString(data, 0, receivedBytes);
 
-                        Message message = JsonUtility.FromJson<Message>(dataMsg);
+                        string[] separate = dataMsg.Split('}');
 
-                        switch (message.type)
+                        string concat = "";
+                        int count = 0;
+
+                        for (int i = 0; i < separate.Length - 1; ++i)
                         {
-                            case Message.MessageType.ClientToServer:
+                            concat += separate[i].ToString() + "}";
+                            count++;
+
+                            if (count == 2)
+                            {
+                                Message message = JsonUtility.FromJson<Message>(concat);
+
+                                switch (message.type)
                                 {
-                                    //Welcome Package
+                                    case Message.MessageType.ClientToServer:
+                                        {
+                                            //Welcome Package
 
-                                    nameText.text = message.clientName;
-                                    loginPanel.SetActive(false);
-                                    blockPanel.SetActive(false);
+                                            nameText.text = message.clientName;
+                                            loginPanel.SetActive(false);
+                                            blockPanel.SetActive(false);
 
-                                    //userList.text += message.clientName + "\n";
+                                            //userList.text += message.clientName + "\n";
 
-                                    break;
+                                            break;
+                                        }
+
+                                    case Message.MessageType.ClientToClient:
+                                        {
+                                            //Direct Message
+
+                                            break;
+                                        }
+                                    case Message.MessageType.Brodcast:
+                                        {
+                                            //Chat Room 
+                                            nameText.text = message.clientName;
+                                            loginPanel.SetActive(false);
+                                            blockPanel.SetActive(false);
+                                            string temp = "<b>" + message.clientName + ": " + "</b>" + message.clientText + "\n";
+                                            chatText.text += temp;
+
+                                            break;
+                                        }
+                                    default:
+                                        {
+                                            Debug.Log("Stop trolling, what is this message, no correct message type");
+                                            break;
+                                        }
                                 }
 
-                            case Message.MessageType.ClientToClient:
-                                {
-                                    //Direct Message
-
-                                    break;
-                                }
-                            case Message.MessageType.Brodcast:
-                                {
-                                    //Chat Room 
-
-                                    string temp = "<b>" + message.clientName + ": " + "</b>" + message.clientText + "\n";
-                                    chatText.text += temp;
-
-                                    break;
-                                }
-                            default:
-                                {
-                                    Debug.Log("Stop trolling, what is this message, no correct message type");
-                                    break;
-                                }
+                                concat = "";
+                                count = 0;
+                            }  
                         }
                     }
                 }
