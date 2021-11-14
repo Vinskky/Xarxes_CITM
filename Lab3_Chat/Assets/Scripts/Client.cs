@@ -6,138 +6,184 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.IO;
+using UnityEngine.UI;
+
+
 
 public class Client : MonoBehaviour
 {
+
+    public GameObject userListPanel;
+
+    public GameObject chatPanel;
+
+    public GameObject loginPanel;
+
+    public GameObject blockPanel;
+
+    public Text userList;
+
+    public Text chatText;
+
+    public Text nameText;
+
+    public InputField loginField;
+
+    public InputField chatField;
+
     Socket socket = null;
 
     IPEndPoint ip = null;
 
-    int port = 6969;
+    int port = 5959;
 
     bool exit = false;
-    bool firstTimeSend = true;
+
     bool backUpSend = false;
 
-    public bool destroyClient = false;
+    bool destroyClient = false;
 
-    public string message = "ping";
+    bool isConnected = false;
 
     Thread thread;
-
-    int countPongs = 1;
 
     // Start is called before the first frame update
     void Start()
     {
+
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
 
         destroyClient = false;
-        exit = false;
-        firstTimeSend = true;
-        message = "ping";
-        countPongs = 0;
 
-        Receiving();
-
+        socket.Connect(ip);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-    }
 
-    void Sending()
-    {
-        if (socket != null)
+        if (Input.GetKeyDown(KeyCode.Return) && isConnected == false )
         {
-            firstTimeSend = false;
-            byte[] data = Encoding.ASCII.GetBytes(message); ;
-            int bytesSend = socket.Send(data);
+            Message sendMsg = new Message();
+            sendMsg.clientName = loginField.text;
+            sendMsg.type = Message.MessageType.ClientToServer;
 
-            if (bytesSend == message.Length)
-            {
-                Debug.Log("Client: Send Correctly " + message);
-                
-            }
-            else
-            {
-                Debug.Log("Client: Error sending");
-               
-            }
+            Sending(sendMsg);
+
+            isConnected = true;
+
+            Debug.Log("Client: Connected to the server " + ip.Address + " at port " + ip.Port);
         }
-    }
 
-    void Receiving()
-    {
-        thread = new Thread(threadRecivingServerData);
-        thread.Start();
-    }
-
-    void threadRecivingServerData()
-    {
-        socket.Connect(ip);
-
-        Debug.Log("Client: Connected to the server " + ip.Address + " at port " + ip.Port);
-       
-
-        if (firstTimeSend)
-            Sending();
-
-        while (!exit)
+        if (isConnected == true)
         {
-            byte[] data = new byte[68];
-
-            try
+            if (Input.GetKeyDown(KeyCode.Return) && chatField.text != "" && chatField.text != null)
             {
-                int receivedBytes = socket.Receive(data);
+                Message chatMsg = new Message();
+                chatMsg.type = Message.MessageType.Brodcast;
+                chatMsg.clientText = chatField.text;
+                chatMsg.clientName = nameText.text;
 
-                string msgRecieved = Encoding.ASCII.GetString(data);
-                string finalMsg = msgRecieved.Trim('\0');
-                if (receivedBytes > 0)
+                Sending(chatMsg);
+            }
+
+            if (socket.Poll(1000, SelectMode.SelectRead))
+            {
+                try
                 {
-                    if (msgRecieved.Contains("pong"))
-                    {
-                        Debug.Log("Client: Received Correctly: " + finalMsg);
-                        
 
-                        Thread.Sleep(500);
-                        Sending();
-                        countPongs++;
-                        if (countPongs == 3)
+                    byte[] data = new byte[68];
+
+                    int receivedBytes = socket.Receive(data);
+
+                    if (receivedBytes > 0)
+                    {
+                        string dataMsg = Encoding.UTF8.GetString(data, 0, receivedBytes);
+
+                        Message message = JsonUtility.FromJson<Message>(dataMsg);
+
+                        switch (message.type)
                         {
-                            message = "disconnect";
-                            Sending();
-                            exit = true;
-                            destroyClient = true;
-                            break;
+                            case Message.MessageType.ClientToServer:
+                                {
+                                    //Welcome Package
+
+                                    nameText.text = message.clientName;
+                                    loginPanel.SetActive(false);
+                                    blockPanel.SetActive(false);
+
+                                    break;
+                                }
+
+                            case Message.MessageType.ClientToClient:
+                                {
+                                    //Direct Message
+
+                                    break;
+                                }
+                            case Message.MessageType.Brodcast:
+                                {
+                                    //Chat Room 
+
+                                    chatText.text += message.clientText + "\n";
+
+                                    break;
+                                }
+                            default:
+                                {
+                                    Debug.Log("Stop trolling, what is this message, no correct message type");
+                                    break;
+                                }
                         }
                     }
                 }
-            }
-            catch
-            {
-                if (socket != null && backUpSend == false)
+                catch (Exception e)
                 {
-                    Debug.Log("Client: Did not get message from server.");
-                    backUpSend = true;
-                    message = "ping";
-                    Sending();
-                    /*//Create new client
-                    socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    socket.Connect(ip);
-                    message = "ping";
-                    Sending();*/
-                }
-                else if (socket != null && backUpSend == true)
-                {
-                    socket.Close();
-                    socket = null;
-                    exit = true;
+                    Debug.Log(e.ToString());
+
+                    /*if (socket != null && backUpSend == false)
+                    {
+                        Debug.Log("Client: Did not get message from server.");
+                        backUpSend = true;
+
+                        Message sendMsg = new Message();
+                        sendMsg.clientName = inputField.text;
+                        sendMsg.type = Message.MessageType.ClientToServer;
+
+                        Sending(sendMsg);
+                    }
+                    else if (socket != null && backUpSend == true)
+                    {
+                        socket.Close();
+                        socket = null;
+                        exit = true;
+                    }*/
                 }
             }
         }
     }
+    void Sending(Message message)
+    {
+        if (socket != null && socket.Poll(1000, SelectMode.SelectWrite))
+        {
+            //Serialize
+
+            try
+            {
+                string json = JsonUtility.ToJson(message);
+
+                byte[] data = Encoding.UTF8.GetBytes(json);
+
+                int bytesSend = socket.Send(data);
+            }
+            catch (Exception e)
+            {
+                Debug.Log(e.ToString());
+            }
+        }
+    }
+
+        
 }
