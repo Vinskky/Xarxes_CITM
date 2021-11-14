@@ -64,66 +64,7 @@ public class Client : MonoBehaviour
     void Update()
     {
 
-        if (Input.GetKeyDown(KeyCode.Return) && chatField.text.StartsWith("/") && chatField.text != null)
-        {
-            //Read which command is
-            string[] data = chatField.text.Split(' ');
-
-            string command = data[0];
-            string userToSend = "";
-            string mssg = "";
-
-            if (command != "/whisper" && command != "/kick")
-            {
-                //only used for changeName, so we put _ on " ".
-                for (uint i = 1; i < data.Length; ++i)
-                {
-                    mssg += data[i].ToString() + "_";
-                }
-            }
-            else
-            {
-                userToSend = data[1].ToString();
-                for (uint i = 2; i < data.Length; ++i)
-                {
-                    mssg += data[i].ToString() + " ";
-                }
-            }
-
-            switch (command)
-            {
-                case "/help":
-                    {
-                        //Returns to user a message explaining all the commands.
-                        CommandHelp();
-                    }
-                    break;
-                case "/list":
-                    {
-                        //Returns to user a message with the list of active users.
-                        CommandList();
-                    }
-                    break;
-                case "/kick":
-                    {
-                        //User input name and if exist kicks him from the chat
-                        CommandKick(userToSend);
-                    }
-                    break;
-                case "/whisper":
-                    {
-                        CommandWhisper(userToSend, mssg);
-                    }
-                    break;
-                case "/changeName":
-                    {
-                        CommandChangeName(mssg);
-                    }
-                    break;
-            }
-
-        }
-        else if (Input.GetKeyDown(KeyCode.Return) && isConnected == false )
+        if (Input.GetKeyDown(KeyCode.Return) && isConnected == false )
         {
             Message sendMsg = new Message();
             sendMsg.clientName = loginField.text;
@@ -138,7 +79,66 @@ public class Client : MonoBehaviour
 
         if (isConnected == true)
         {
-            if (Input.GetKeyDown(KeyCode.Return) && chatField.text != "" && chatField.text != null && chatField.text.StartsWith("/") == false)
+            if (Input.GetKeyDown(KeyCode.Return) && chatField.text.StartsWith("/") && chatField.text != null)
+            {
+                //Read which command is
+                string[] data = chatField.text.Split(' ');
+
+                string command = data[0];
+                string userToSend = "";
+                string mssg = "";
+
+                if (command != "/whisper" && command != "/kick")
+                {
+                    //only used for changeName, so we put _ on " ".
+                    for (uint i = 1; i < data.Length; ++i)
+                    {
+                        mssg += data[i].ToString() + "_";
+                    }
+                }
+                else
+                {
+                    userToSend = data[1].ToString();
+                    for (uint i = 2; i < data.Length; ++i)
+                    {
+                        mssg += data[i].ToString() + " ";
+                    }
+                }
+
+                switch (command)
+                {
+                    case "/help":
+                        {
+                            //Returns to user a message explaining all the commands.
+                            CommandHelp();
+                        }
+                        break;
+                    case "/list":
+                        {
+                            //Returns to user a message with the list of active users.
+                            CommandList();
+                        }
+                        break;
+                    case "/kick":
+                        {
+                            //User input name and if exist kicks him from the chat
+                            CommandKick(userToSend);
+                        }
+                        break;
+                    case "/whisper":
+                        {
+                            CommandWhisper(userToSend, mssg);
+                        }
+                        break;
+                    case "/changeName":
+                        {
+                            CommandChangeName(mssg);
+                        }
+                        break;
+                }
+                chatField.text = "";
+            }
+            else if (Input.GetKeyDown(KeyCode.Return) && chatField.text != "" && chatField.text != null && chatField.text.StartsWith("/") == false)
             {
                 Message chatMsg = new Message();
                 chatMsg.type = Message.MessageType.Brodcast;
@@ -147,6 +147,7 @@ public class Client : MonoBehaviour
                 chatMsg.clientColor = nameText.color;
 
                 Sending(chatMsg);
+                chatField.text = "";
             }
 
             if (socket.Poll(1000, SelectMode.SelectRead))
@@ -200,9 +201,14 @@ public class Client : MonoBehaviour
                                     case Message.MessageType.Brodcast:
                                         {
                                             //Chat Room 
-                                            nameText.text = message.clientName;
-                                            loginPanel.SetActive(false);
-                                            blockPanel.SetActive(false);
+                                            for(int x = 0; x < message.clients.Count; ++x)
+                                            {
+                                                if(!userList.text.Contains(message.clients[x]))
+                                                {
+                                                    userList.text += message.clients[x] + "\n";
+                                                }
+                                            }
+
                                             string temp = "<b>" + message.clientName + ": " + "</b>" + message.clientText + "\n";
                                             chatText.text += temp;
 
@@ -245,6 +251,7 @@ public class Client : MonoBehaviour
                 }
             }
         }
+        
     }
     void Sending(Message message)
     {
@@ -270,17 +277,31 @@ public class Client : MonoBehaviour
     void CommandHelp()
     {
         //returns message with all conditions about 
-        string helpString = "Welcome to this chatroom. You can use the next commands: /n" +
-                            "/help: display information about all available commands. /n" +
-                            "/list: display a list with all active users connected to the server. /n" +
-                            "/kick + ' ' + username: Disconnects user from the server. /n" +
-                            "/whisper + ' ' + username + ' ' + message: Sends exclusively a message to the selected user. /n" + 
-                            "changeName + ' ' + newName: change you name";
-
+        string helpString = "Welcome to this chatroom. You can use the next commands: \n" +
+                            "/help: display information about all available commands. \n" +
+                            "/list: display a list with all active users connected to the server. \n" +
+                            "/kick + ' ' + username: Disconnects user from the server. \n" +
+                            "/whisper + ' ' + username + ' ' + message: Sends exclusively a message to the selected user. \n" +
+                            "changeName + ' ' + newName: change you name. \n";
+        chatText.text += helpString;
     }
     void CommandList()
     {
+        string[] data = userList.text.Split('\n');
 
+        chatText.text += "<b>List of users: </b> \n";
+
+        if(data.Length == 1)
+        {
+            chatText.text += "There's nobody else connected. \n";
+        }
+        else
+        {
+            for (int i = 0; i < data.Length; i++)
+            {
+                chatText.text += data[i].ToString() + "\n";
+            }
+        }
     }
 
     void CommandKick(string user)
@@ -299,5 +320,16 @@ public class Client : MonoBehaviour
         //modify class Message clientName to newName
         //update list
         //send message to all users saying now clientname is newName?
+    }
+
+    private void OnDestroy()
+    {
+        Message disconect = new Message();
+        disconect.clientName = nameText.text;
+        disconect.type = Message.MessageType.Disconnect;
+        Sending(disconect);
+        socket.Close();
+        socket = null;
+        
     }
 }

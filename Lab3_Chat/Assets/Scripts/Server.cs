@@ -18,7 +18,8 @@ public class Message
     {
         ClientToClient,
         ClientToServer,         //Welcome just user name
-        Brodcast
+        Brodcast,
+        Disconnect
     }
 
     public string clientText = "";
@@ -26,6 +27,7 @@ public class Message
     public string clientName = "";
     public Color clientColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
 
+    public List<string> clients = new List<string>();
     //Date of the message send
     //public System.DateTime currentTime;
 }
@@ -42,12 +44,12 @@ public class Server : MonoBehaviour
         public bool firstTimeConnect;
         //Add more things if needed
 
-        public ServerClient(Socket socket, IPEndPoint ip)
+        public ServerClient(Socket socket, IPEndPoint ip, string name, Color color)
         {
             clientSocket = socket;
             clientIp = ip;
-            clientName = "Guest";
-            clientColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+            clientName = name;
+            clientColor = color;
             firstTimeConnect = true;
         }
     }
@@ -91,7 +93,7 @@ public class Server : MonoBehaviour
             Socket newSocket = socketServer.Accept();
             IPEndPoint newEndPoint = (IPEndPoint)newSocket.RemoteEndPoint;
 
-            ServerClient clients = new ServerClient(newSocket, newEndPoint);
+            ServerClient clients = new ServerClient(newSocket, newEndPoint, "", Color.black);
 
             acceptedClients.Add(clients);
 
@@ -99,9 +101,9 @@ public class Server : MonoBehaviour
             Debug.Log("Accepted new client with address: " + clients.clientIp.Address + " and port: " + clients.clientIp.Port);
         }
 
-        for(int i = 0; i < acceptedClients.Count; ++i)
+        for(int i = 0; acceptedClients.Count > 0 && i < acceptedClients.Count; ++i)
         {
-            while (acceptedClients[i].clientSocket.Poll(1000, SelectMode.SelectRead))
+            while (acceptedClients.Count > 0 && acceptedClients[i].clientSocket.Poll(1000, SelectMode.SelectRead))
             {
 
                 try
@@ -127,8 +129,9 @@ public class Server : MonoBehaviour
                                 case Message.MessageType.ClientToServer:
                                     {
                                         //Welcome Package
-
-                                        ServerClient thisClient = new ServerClient(acceptedClients[i].clientSocket, acceptedClients[i].clientIp);
+                                        acceptedClients[i].clientName = message.clientName;
+                                        acceptedClients[i].clientColor = message.clientColor;
+                                        ServerClient thisClient = new ServerClient(acceptedClients[i].clientSocket, acceptedClients[i].clientIp, acceptedClients[i].clientName, acceptedClients[i].clientColor);
 
                                         thisClient.clientName = message.clientName;
 
@@ -142,6 +145,17 @@ public class Server : MonoBehaviour
                                             Debug.Log("Connected to the chat room");
 
                                             welcomePackage.clientText += message.clientName;
+                                            foreach(ServerClient clients in allClients)
+                                            {
+                                                welcomePackage.clients.Add(clients.clientName);
+                                            }
+                                            welcomePackage.type = Message.MessageType.ClientToServer;
+
+                                            string json = JsonUtility.ToJson(welcomePackage);
+
+                                            byte[] welcomeData = Encoding.UTF8.GetBytes(json);
+
+                                            thisClient.clientSocket.Send(welcomeData);
 
                                             Brodcast(welcomePackage);
 
@@ -173,6 +187,31 @@ public class Server : MonoBehaviour
 
                                         Brodcast(message);
 
+                                        break;
+                                    }
+                                case Message.MessageType.Disconnect:
+                                    {
+                                        //Chat Room 
+                                        for(int w = 0; w < allClients.Count; ++w)
+                                        {
+                                            if(allClients[w].clientName == message.clientName)
+                                            {
+                                                allClients.Remove(allClients[w]);
+                                            }
+                                        }
+
+                                        for (int w = 0; w < acceptedClients.Count; ++w)
+                                        {
+                                            if (acceptedClients[w].clientName == message.clientName)
+                                            {
+                                                acceptedClients.Remove(acceptedClients[w]);
+                                            }
+                                        }
+
+                                        message.clientText = message.clientName + " left the chatroom";
+                                        if (acceptedClients.Count > 0)
+                                            Brodcast(message);
+                                        
                                         break;
                                     }
                                 default:
