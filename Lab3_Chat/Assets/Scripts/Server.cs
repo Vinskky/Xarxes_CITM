@@ -19,7 +19,8 @@ public class Message
         ClientToClient,
         ClientToServer,         //Welcome just user name
         Brodcast,
-        Disconnect
+        Disconnect,
+        ChangeName
     }
 
     public string clientText = "";
@@ -192,7 +193,17 @@ public class Server : MonoBehaviour
                                 case Message.MessageType.Disconnect:
                                     {
                                         //Chat Room 
-                                        for(int w = 0; w < allClients.Count; ++w)
+                                        Message disconect = new Message();
+                                        disconect.clientName = message.clientName;
+                                        disconect.type = Message.MessageType.Disconnect;
+
+                                        string json = JsonUtility.ToJson(disconect);
+
+                                        byte[] byebye = Encoding.UTF8.GetBytes(json);
+
+                                        //acceptedClients.clientSocket.Send(welcomeData);
+
+                                        for (int w = 0; w < allClients.Count; ++w)
                                         {
                                             if(allClients[w].clientName == message.clientName)
                                             {
@@ -204,15 +215,51 @@ public class Server : MonoBehaviour
                                         {
                                             if (acceptedClients[w].clientName == message.clientName)
                                             {
+                                                acceptedClients[w].clientSocket.Send(byebye);
                                                 acceptedClients.Remove(acceptedClients[w]);
                                             }
                                         }
 
                                         message.clientText = message.clientName + " left the chatroom";
                                         message.clients.Remove(message.clientName);
+
                                         if (acceptedClients.Count > 0)
                                             Brodcast(message);
                                         
+                                        break;
+                                    }
+                                case Message.MessageType.ChangeName:
+                                    {
+                                        string tmp = "";
+                                        foreach(ServerClient clients in allClients)
+                                        {
+                                            if(clients.clientName == message.clientName)
+                                            {
+                                                tmp = clients.clientName;
+                                                clients.clientName = message.clientText;
+                                            }
+                                        }
+
+                                        foreach (ServerClient clients in acceptedClients)
+                                        {
+                                            if (clients.clientName == message.clientName)
+                                            {
+                                                clients.clientName = message.clientText;
+                                            }
+                                        }
+
+                                        for(int x = 0;x < message.clients.Count;++x)
+                                        {
+                                            if(message.clients[x] == tmp)
+                                            {
+                                                message.clients[x] = message.clientText;
+                                            }
+                                        }
+                                        message.clientName = message.clientText;
+                                        message.clientText = tmp + " now is: " + message.clientName;
+
+                                        Brodcast(message);
+
                                         break;
                                     }
                                 default:

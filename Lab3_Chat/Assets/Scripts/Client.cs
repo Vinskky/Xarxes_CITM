@@ -93,7 +93,10 @@ public class Client : MonoBehaviour
                     //only used for changeName, so we put _ on " ".
                     for (uint i = 1; i < data.Length; ++i)
                     {
-                        mssg += data[i].ToString() + "_";
+                        if (i > 1)
+                            mssg += "_" + data[i].ToString();
+                        else
+                            mssg += data[i].ToString();
                     }
                 }
                 else
@@ -133,6 +136,11 @@ public class Client : MonoBehaviour
                     case "/changeName":
                         {
                             CommandChangeName(mssg);
+                        }
+                        break;
+                    default:
+                        {
+                            chatText.text += "Wrong command try /help to more info. \n";
                         }
                         break;
                 }
@@ -211,6 +219,17 @@ public class Client : MonoBehaviour
 
                                             string temp = "<b>" + message.clientName + ": " + "</b>" + message.clientText + "\n";
                                             chatText.text += temp;
+
+                                            break;
+                                        }
+                                    case Message.MessageType.Disconnect:
+                                        {
+                                            //Direct Message
+                                            chatText.text += "You've been banned. closing app.";
+                                            socket.Close();
+                                            socket = null;
+
+                                            Application.Quit();
 
                                             break;
                                         }
@@ -308,6 +327,11 @@ public class Client : MonoBehaviour
     {
         //check if user exist
         //desconect user
+        Message disconect = new Message();
+        disconect.clientName = user;
+        disconect.clients = connectedClients;
+        disconect.type = Message.MessageType.Disconnect;
+        Sending(disconect);
     }
     void CommandWhisper(string user, string msg)
     {
@@ -320,6 +344,13 @@ public class Client : MonoBehaviour
         //modify class Message clientName to newName
         //update list
         //send message to all users saying now clientname is newName?
+        Message changeStr = new Message();
+        changeStr.clientName = nameText.text;
+        nameText.text = newName;
+        changeStr.clientText = newName;
+        changeStr.clients = connectedClients;
+        changeStr.type = Message.MessageType.ChangeName;
+        Sending(changeStr);
     }
 
     private void OnDestroy()
