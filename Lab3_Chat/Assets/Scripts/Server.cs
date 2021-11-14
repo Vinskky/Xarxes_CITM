@@ -24,6 +24,8 @@ public class Message
     public string clientText = " ";
     public MessageType type = MessageType.ClientToServer;
     public string clientName = " ";
+    public Color clientColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+
     //Date of the message send
     //public System.DateTime currentTime;
 }

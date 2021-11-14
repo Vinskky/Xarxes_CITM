@@ -85,6 +85,7 @@ public class Client : MonoBehaviour
                 chatMsg.type = Message.MessageType.Brodcast;
                 chatMsg.clientText = chatField.text;
                 chatMsg.clientName = nameText.text;
+                chatMsg.clientColor = nameText.color;
 
                 Sending(chatMsg);
             }
@@ -94,7 +95,7 @@ public class Client : MonoBehaviour
                 try
                 {
 
-                    byte[] data = new byte[68];
+                    byte[] data = new byte[2048];
 
                     int receivedBytes = socket.Receive(data);
 
@@ -114,6 +115,8 @@ public class Client : MonoBehaviour
                                     loginPanel.SetActive(false);
                                     blockPanel.SetActive(false);
 
+                                    //userList.text += message.clientName + "\n";
+
                                     break;
                                 }
 
@@ -127,7 +130,8 @@ public class Client : MonoBehaviour
                                 {
                                     //Chat Room 
 
-                                    chatText.text += message.clientText + "\n";
+                                    string temp = "<b>" + message.clientName + ": " + "</b>" + message.clientText + "\n";
+                                    chatText.text += temp;
 
                                     break;
                                 }
