@@ -46,12 +46,12 @@ public class Client : MonoBehaviour
 
     bool isConnected = false;
 
-    Thread thread;
+    List<string> connectedClients;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        connectedClients = new List<string>();
         socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ip = new IPEndPoint(IPAddress.Parse("127.0.0.1"), port);
 
@@ -201,13 +201,13 @@ public class Client : MonoBehaviour
                                     case Message.MessageType.Brodcast:
                                         {
                                             //Chat Room 
-                                            for(int x = 0; x < message.clients.Count; ++x)
+                                            string tmp = "";
+                                            connectedClients = message.clients;
+                                            for(int x = 0; x < connectedClients.Count; ++x)
                                             {
-                                                if(!userList.text.Contains(message.clients[x]))
-                                                {
-                                                    userList.text += message.clients[x] + "\n";
-                                                }
+                                               tmp += message.clients[x] + "\n";
                                             }
+                                            userList.text = tmp;
 
                                             string temp = "<b>" + message.clientName + ": " + "</b>" + message.clientText + "\n";
                                             chatText.text += temp;
@@ -326,6 +326,7 @@ public class Client : MonoBehaviour
     {
         Message disconect = new Message();
         disconect.clientName = nameText.text;
+        disconect.clients = connectedClients;
         disconect.type = Message.MessageType.Disconnect;
         Sending(disconect);
         socket.Close();

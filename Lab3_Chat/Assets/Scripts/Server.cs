@@ -209,6 +209,7 @@ public class Server : MonoBehaviour
                                         }
 
                                         message.clientText = message.clientName + " left the chatroom";
+                                        message.clients.Remove(message.clientName);
                                         if (acceptedClients.Count > 0)
                                             Brodcast(message);
                                         
