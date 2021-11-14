@@ -21,9 +21,9 @@ public class Message
         Brodcast
     }
 
-    public string clientText = " ";
+    public string clientText = "";
     public MessageType type = MessageType.ClientToServer;
-    public string clientName = " ";
+    public string clientName = "";
     public Color clientColor = new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
 
     //Date of the message send
@@ -134,27 +134,29 @@ public class Server : MonoBehaviour
 
                                         allClients.Add(thisClient);
 
+                                        Message welcomePackage = message;
+
                                         if (thisClient.firstTimeConnect == true)
                                         {
-                                            Message welcomePackage = message;
 
-                                            welcomePackage.clientText = "Welcome ";
+                                            Debug.Log("Connected to the chat room");
 
-                                            string json = JsonUtility.ToJson(welcomePackage);
+                                            welcomePackage.clientText += message.clientName;
 
-                                            byte[] welcomeData = Encoding.UTF8.GetBytes(json);
+                                            Brodcast(welcomePackage);
 
-                                            acceptedClients[i].clientSocket.Send(welcomeData);
+                                            message.clientText = " connected for the first time";
 
-                                            message.clientText = "User: " + thisClient.clientName + " connected for the first time";
-                                            
                                         }
                                         else
                                         {
-                                            message.clientText = "User: " + thisClient.clientName + " reconnected";
+                                            message.clientText = " reconnected";
+
+                                            Debug.Log("Reconnected to the chat room");
+
                                         }
 
-                                        //Brodcast(message);
+                                        Brodcast(message);
 
                                         break;
                                     }
